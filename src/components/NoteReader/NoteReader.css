@@ -1,0 +1,259 @@
+/* Font + tokens (--sq-*) come from tokens.css, imported once in app.css */
+
+.nr-page {
+  min-height: 100vh;
+  background: var(--sq-ink);
+  color: var(--sq-text);
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  padding: 2.5rem 1.5rem 5rem;
+}
+
+/* ---------- Back button ---------- */
+
+.nr-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  background: transparent;
+  border: none;
+  color: var(--sq-text-muted);
+  font-family: inherit;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  padding: 0.5rem 0.25rem;
+  margin-bottom: 1.5rem;
+  transition: color 0.15s ease;
+}
+
+.nr-back:hover {
+  color: var(--sq-text);
+}
+
+.nr-back:focus-visible {
+  outline: 2px solid var(--sq-periwinkle);
+  outline-offset: 3px;
+  border-radius: 0.25rem;
+}
+
+/* ---------- Layout ---------- */
+
+.nr-layout {
+  max-width: 60rem;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 13rem minmax(0, 1fr);
+  gap: 3rem;
+  align-items: start;
+}
+
+/* ---------- Table of contents ---------- */
+
+.nr-toc {
+  position: sticky;
+  top: 2.5rem;
+}
+
+.nr-toc__label {
+  font-size: 0.75rem;
+  color: var(--sq-text-muted);
+  margin: 0 0 0.75rem;
+}
+
+.nr-toc ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border-left: 1px solid var(--sq-border);
+}
+
+.nr-toc__link {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-left: 2px solid transparent;
+  margin-left: -1px;
+  padding: 0.25rem 0 0.25rem 0.875rem;
+  font-family: inherit;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--sq-text-muted);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.nr-toc__link:hover {
+  color: var(--sq-text);
+}
+
+.nr-toc__link--active {
+  color: var(--sq-amber);
+  border-left-color: var(--sq-amber);
+}
+
+.nr-toc__link:focus-visible {
+  outline: 2px solid var(--sq-periwinkle);
+  outline-offset: 2px;
+}
+
+/* ---------- Content ---------- */
+
+.nr-content {
+  max-width: 42rem;
+}
+
+.nr-title {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 480;
+  font-size: clamp(1.875rem, 3.4vw, 2.5rem);
+  line-height: 1.15;
+  margin: 0 0 1.25rem;
+}
+
+.nr-intro {
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  color: var(--sq-text-muted);
+  margin: 0 0 3rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid var(--sq-border);
+}
+
+.nr-section {
+  margin-bottom: 3rem;
+  scroll-margin-top: 2.5rem;
+}
+
+.nr-section__title {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 480;
+  font-size: 1.375rem;
+  margin: 0 0 0.875rem;
+}
+
+.nr-section__body {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--sq-text);
+  white-space: pre-line;
+}
+
+/* ---------- Video ---------- */
+
+.nr-video {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  margin-top: 1.25rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid var(--sq-border);
+  background: var(--sq-panel);
+}
+
+.nr-video iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* ---------- Loading skeleton ---------- */
+
+.nr-skeleton {
+  max-width: 42rem;
+  margin: 0 auto;
+}
+
+.nr-skeleton__title {
+  width: 70%;
+  height: 2.25rem;
+  border-radius: 0.375rem;
+  background: var(--sq-panel-2);
+  margin-bottom: 1.5rem;
+}
+
+.nr-skeleton__line {
+  width: 100%;
+  height: 0.875rem;
+  border-radius: 0.25rem;
+  background: var(--sq-panel-2);
+  margin-bottom: 0.75rem;
+}
+
+.nr-skeleton__block {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 0.75rem;
+  background: var(--sq-panel-2);
+  margin-top: 1.5rem;
+}
+
+.nr-skeleton__title,
+.nr-skeleton__line,
+.nr-skeleton__block {
+  animation: nr-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes nr-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nr-skeleton__title,
+  .nr-skeleton__line,
+  .nr-skeleton__block {
+    animation: none;
+  }
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 720px) {
+  .nr-layout {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .nr-toc {
+    position: static;
+  }
+
+  .nr-toc ul {
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-left: none;
+    gap: 0.5rem 1rem;
+  }
+
+  .nr-toc__link {
+    border-left: none;
+    border-bottom: 2px solid transparent;
+    padding: 0.25rem 0;
+  }
+
+  .nr-toc__link--active {
+    border-bottom-color: var(--sq-amber);
+  }
+
+  .nr-content {
+    max-width: none;
+  }
+}

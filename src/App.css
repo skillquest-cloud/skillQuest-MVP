@@ -1,0 +1,18 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,340;9..144,480;9..144,600&family=Inter:wght@400;500;600&display=swap");
+
+:root {
+  --sq-ink: #0f1225;
+  --sq-panel: #171b36;
+  --sq-panel-2: #1e2344;
+  --sq-amber: #ffb648;
+  --sq-periwinkle: #7d95ff;
+  --sq-text: #f5f3ed;
+  --sq-text-muted: #9a9fc2;
+  --sq-border: rgba(245, 243, 237, 0.12);
+}

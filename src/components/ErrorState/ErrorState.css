@@ -1,0 +1,48 @@
+/* Font + tokens (--sq-*) come from tokens.css, imported once in app.css */
+
+.es-wrap {
+  max-width: 60rem;
+  margin: 2rem auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.875rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--sq-border);
+  border-radius: 0.75rem;
+  background: var(--sq-panel);
+}
+
+.es-message {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--sq-text-muted);
+}
+
+.es-retry {
+  background: var(--sq-amber);
+  color: #251705;
+  border: none;
+  border-radius: 0.5rem;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+
+.es-retry:hover {
+  background: #ffc670;
+}
+
+.es-retry:active {
+  transform: scale(0.97);
+}
+
+.es-retry:focus-visible {
+  outline: 2px solid var(--sq-periwinkle);
+  outline-offset: 2px;
+}
