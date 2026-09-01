@@ -4,13 +4,23 @@ import CourseGrid from "./components/courese/CourseGrid";
 import LevelGrid from "./components/LevelGrid/LevelGrid";
 import SubjectGrid from "./components/SubjestGrid/SubjectGrid";
 import NoteReader, { type NoteData } from "./components/NoteReader/NoteReader";
+import AdminPage from "./components/AdminPage/AdminPage";
 import "./App.css";
 
 type View = "landing" | "courses" | "levels" | "subjects" | "note";
 
 type DriveItem = { id: string; name: string };
 
-function App() {
+/** Fire-and-forget click tracking — never blocks navigation on failure. */
+function trackClick(label: string) {
+  fetch("/api/track", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ label }),
+  }).catch((err) => console.error("Failed to record click:", err));
+}
+
+function MainFlow() {
   const [view, setView] = useState<View>("landing");
 
   const [courses, setCourses] = useState<DriveItem[]>([]);
@@ -100,17 +110,14 @@ function App() {
       .finally(() => setNoteLoading(false));
   }, []);
 
-  // Fetch courses once we land on the courses view.
   useEffect(() => {
     if (view === "courses") loadCourses();
   }, [view, loadCourses]);
 
-  // Fetch levels whenever a course is selected.
   useEffect(() => {
     if (view === "levels" && selectedCourse) loadLevels(selectedCourse.id);
   }, [view, selectedCourse, loadLevels]);
 
-  // Fetch subjects whenever a level is selected.
   useEffect(() => {
     if (view === "subjects" && selectedLevel) loadSubjects(selectedLevel.id);
   }, [view, selectedLevel, loadSubjects]);
@@ -119,9 +126,12 @@ function App() {
     setSelectedSubjectId(subjectId);
     setView("note");
     loadNote(subjectId);
+
+    if (selectedCourse && selectedLevel) {
+      trackClick(`${selectedCourse.name} · ${selectedLevel.name}`);
+    }
   }
 
-  // Reset scroll position on every view change.
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [view]);
@@ -186,6 +196,16 @@ function App() {
       )}
     </>
   );
+}
+
+function App() {
+  // Hidden admin route — not linked anywhere in the UI, reached only by
+  // visiting /skillquest_admin directly.
+  const isAdminRoute =
+    typeof window !== "undefined" &&
+    window.location.pathname === "/skillquest_admin";
+
+  return isAdminRoute ? <AdminPage /> : <MainFlow />;
 }
 
 export default App;

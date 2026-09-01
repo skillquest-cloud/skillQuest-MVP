@@ -1,0 +1,97 @@
+/* Font + tokens (--sq-*) come from tokens.css, imported once in app.css */
+
+.ap-page {
+  min-height: 100vh;
+  background: var(--sq-ink);
+  color: var(--sq-text);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  padding: 2.5rem 1.5rem 4rem;
+}
+
+.ap-heading {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 480;
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  max-width: 48rem;
+  margin: 0 auto 2rem;
+}
+
+.ap-loading,
+.ap-empty {
+  max-width: 48rem;
+  margin: 0 auto;
+  color: var(--sq-text-muted);
+  font-size: 0.9375rem;
+}
+
+/* ---------- Summary cards ---------- */
+
+.ap-summary {
+  max-width: 48rem;
+  margin: 0 auto 2.5rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.ap-stat {
+  background: var(--sq-panel);
+  border: 1px solid var(--sq-border);
+  border-radius: 0.875rem;
+  padding: 1.25rem 1.5rem;
+}
+
+.ap-stat__value {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 480;
+  font-size: 2rem;
+  margin: 0 0 0.25rem;
+  color: var(--sq-amber);
+}
+
+.ap-stat__label {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--sq-text-muted);
+}
+
+/* ---------- Breakdown table ---------- */
+
+.ap-subheading {
+  max-width: 48rem;
+  margin: 0 auto 1rem;
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 480;
+  font-size: 1.25rem;
+}
+
+.ap-table {
+  max-width: 48rem;
+  margin: 0 auto;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.ap-table th {
+  text-align: left;
+  font-weight: 500;
+  color: var(--sq-text-muted);
+  font-size: 0.8125rem;
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid var(--sq-border);
+}
+
+.ap-table td {
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid var(--sq-border);
+}
+
+.ap-table td:last-child,
+.ap-table th:last-child {
+  text-align: right;
+}
+
+.ap-table tbody tr:hover {
+  background: rgba(245, 243, 237, 0.04);
+}

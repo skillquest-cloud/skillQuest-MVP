@@ -10,6 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@vercel/kv": "^3.0.0",
+    "@vercel/node": "^10.0.0",
+    "googleapis": "^178.0.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router": "^7.18.3"
