@@ -148,6 +148,49 @@
   white-space: pre-line;
 }
 
+/* ---------- Images / diagrams ---------- */
+
+.nr-images {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+}
+
+.nr-figure {
+  margin: 0;
+}
+
+.nr-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+  border: 1px solid var(--sq-border);
+  background: var(--sq-panel);
+}
+
+/* Inline SVGs: no card/border/background — they sit flush against the
+   page like a piece of typography, not a pasted-in screenshot. Give the
+   diagram itself var(--sq-*) colors or currentColor when you make it. */
+.nr-figure--svg .nr-figure__svg {
+  display: flex;
+  justify-content: center;
+  color: var(--sq-text);
+}
+
+.nr-figure__svg svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.nr-figure figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--sq-text-muted);
+  text-align: center;
+}
+
 /* ---------- Video ---------- */
 
 .nr-video {

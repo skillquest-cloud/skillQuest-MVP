@@ -17,16 +17,31 @@ import "./NoteReader.css";
  *       "id": "offer-acceptance",
  *       "title": "Offer & Acceptance",
  *       "body": "A contract begins when...",
+ *       "images": [
+ *         { "svg": "<svg ...>...</svg>", "caption": "Fig 1: Offer flow" },
+ *         { "url": "https://...", "caption": "Fig 2: Scanned question" }
+ *       ],
  *       "youtubeId": "dQw4w9WgXcQ"
  *     }
  *   ]
  * }
  */
 
+type NoteImage = {
+  /** For photos/screenshots/scanned question drawings — a plain URL. */
+  url?: string;
+  /** For diagrams — raw SVG markup that inherits the page's colors and
+   *  sits flush against the background instead of looking pasted in.
+   *  Provide either `url` or `svg`, not both. */
+  svg?: string;
+  caption?: string;
+};
+
 type NoteSection = {
   id: string;
   title: string;
   body: string;
+  images?: NoteImage[];
   youtubeId?: string;
 };
 
@@ -156,6 +171,37 @@ export default function NoteReader({
               >
                 <h2 className="nr-section__title">{section.title}</h2>
                 <p className="nr-section__body">{section.body}</p>
+
+                {section.images && section.images.length > 0 && (
+                  <div className="nr-images">
+                    {section.images.map((image, i) =>
+                      image.svg ? (
+                        <figure className="nr-figure nr-figure--svg" key={i}>
+                          <div
+                            className="nr-figure__svg"
+                            role="img"
+                            aria-label={image.caption ?? section.title}
+                            dangerouslySetInnerHTML={{ __html: image.svg }}
+                          />
+                          {image.caption && (
+                            <figcaption>{image.caption}</figcaption>
+                          )}
+                        </figure>
+                      ) : (
+                        <figure className="nr-figure" key={i}>
+                          <img
+                            src={image.url}
+                            alt={image.caption ?? section.title}
+                            loading="lazy"
+                          />
+                          {image.caption && (
+                            <figcaption>{image.caption}</figcaption>
+                          )}
+                        </figure>
+                      ),
+                    )}
+                  </div>
+                )}
 
                 {section.youtubeId && (
                   <div className="nr-video">
