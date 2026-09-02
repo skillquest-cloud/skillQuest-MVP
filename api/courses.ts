@@ -1,16 +1,13 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { listChildFolders } from "../lib/googleDrive";
-import { cached } from "../lib/cache";
+import { listChildFolders } from "../lib/googleDrive.js";
+import { cached } from "../lib/cache.js";
 
 /**
  * GET /api/courses
  * Returns the course folders directly under your Drive root folder.
  * Set DRIVE_ROOT_FOLDER_ID in Vercel env vars to that root folder's id.
  */
-export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse
-) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -24,7 +21,7 @@ export default async function handler(
 
   try {
     const courses = await cached("courses", () =>
-      listChildFolders(rootFolderId)
+      listChildFolders(rootFolderId),
     );
     return res.status(200).json({ courses });
   } catch (err) {

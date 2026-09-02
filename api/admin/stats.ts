@@ -1,15 +1,12 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getStats } from "../../lib/analytics";
+import { getStats } from "../../lib/analytics.js";
 
 /**
  * GET /api/admin/stats
  * Returns total clicks today, total clicks all-time, and a breakdown
  * by course-level label, sorted highest first.
  */
-export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse
-) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
   }

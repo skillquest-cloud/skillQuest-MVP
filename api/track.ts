@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { recordClick } from "../lib/analytics";
+import { recordClick } from "../lib/analytics.js";
 
 /**
  * POST /api/track
@@ -8,10 +8,7 @@ import { recordClick } from "../lib/analytics";
  * Fire-and-forget from the frontend — failures here should never block
  * the user's actual navigation.
  */
-export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse
-) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
