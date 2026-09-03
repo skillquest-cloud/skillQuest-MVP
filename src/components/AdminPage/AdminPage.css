@@ -4,7 +4,11 @@
   min-height: 100vh;
   background: var(--sq-ink);
   color: var(--sq-text);
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   padding: 2.5rem 1.5rem 4rem;
 }
 
@@ -30,7 +34,7 @@
   max-width: 48rem;
   margin: 0 auto 2.5rem;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
   gap: 1rem;
 }
 
@@ -63,6 +67,14 @@
   font-family: "Fraunces", Georgia, serif;
   font-weight: 480;
   font-size: 1.25rem;
+}
+
+.ap-subheading--first {
+  margin-top: 0;
+}
+
+.ap-subheading:not(.ap-subheading--first) {
+  margin-top: 2.5rem;
 }
 
 .ap-table {

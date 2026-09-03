@@ -6,6 +6,9 @@ type Stats = {
   totalToday: number;
   totalAllTime: number;
   breakdown: { label: string; count: number }[];
+  visitsToday: number;
+  visitsAllTime: number;
+  uniqueVisitors: number;
 };
 
 export default function AdminPage() {
@@ -43,6 +46,23 @@ export default function AdminPage() {
         <p className="ap-loading">Loading stats…</p>
       ) : (
         <>
+          <h2 className="ap-subheading ap-subheading--first">Site visits</h2>
+          <div className="ap-summary">
+            <div className="ap-stat">
+              <p className="ap-stat__value">{stats.visitsToday}</p>
+              <p className="ap-stat__label">Visits today</p>
+            </div>
+            <div className="ap-stat">
+              <p className="ap-stat__value">{stats.visitsAllTime}</p>
+              <p className="ap-stat__label">Visits all-time</p>
+            </div>
+            <div className="ap-stat">
+              <p className="ap-stat__value">{stats.uniqueVisitors}</p>
+              <p className="ap-stat__label">Unique visitors</p>
+            </div>
+          </div>
+
+          <h2 className="ap-subheading">Note clicks</h2>
           <div className="ap-summary">
             <div className="ap-stat">
               <p className="ap-stat__value">{stats.totalToday}</p>

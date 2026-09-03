@@ -20,6 +20,26 @@ function trackClick(label: string) {
   }).catch((err) => console.error("Failed to record click:", err));
 }
 
+/** Anonymous id stored in localStorage — no login, distinguishes returning
+ *  visitors from new ones without collecting any personal data. */
+function getVisitorId(): string {
+  const key = "sq_visitor_id";
+  let id = localStorage.getItem(key);
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem(key, id);
+  }
+  return id;
+}
+
+function trackVisit() {
+  fetch("/api/track-visit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ visitorId: getVisitorId() }),
+  }).catch((err) => console.error("Failed to record visit:", err));
+}
+
 function MainFlow() {
   const [view, setView] = useState<View>("landing");
 
@@ -108,6 +128,10 @@ function MainFlow() {
         setNoteError(true);
       })
       .finally(() => setNoteLoading(false));
+  }, []);
+
+  useEffect(() => {
+    trackVisit();
   }, []);
 
   useEffect(() => {
