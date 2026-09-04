@@ -21,10 +21,16 @@ import "./NoteReader.css";
  *         { "svg": "<svg ...>...</svg>", "caption": "Fig 1: Offer flow" },
  *         { "url": "https://...", "caption": "Fig 2: Scanned question" }
  *       ],
- *       "youtubeId": "dQw4w9WgXcQ"
+ *       "youtubeId": "dQw4w9WgXcQ",
+ *       "subsections": [
+ *         { "title": "Express Offers", "body": "..." },
+ *         { "title": "Implied Offers", "body": "..." }
+ *       ]
  *     }
  *   ]
  * }
+ * subsections are smaller subtitled chunks inside a section — they don't
+ * get their own table-of-contents entry, unlike top-level sections.
  */
 
 type NoteImage = {
@@ -37,12 +43,23 @@ type NoteImage = {
   caption?: string;
 };
 
+/** A smaller subtitled chunk living inside a section — e.g. "Express
+ *  Contracts" and "Implied Contracts" both inside a "Types of Contracts"
+ *  section. Doesn't get its own table-of-contents entry. */
+type NoteSubsection = {
+  title: string;
+  body: string;
+  images?: NoteImage[];
+  youtubeId?: string;
+};
+
 type NoteSection = {
   id: string;
   title: string;
   body: string;
   images?: NoteImage[];
   youtubeId?: string;
+  subsections?: NoteSubsection[];
 };
 
 export type NoteData = {
@@ -50,6 +67,63 @@ export type NoteData = {
   introduction: string;
   sections: NoteSection[];
 };
+
+function NoteImages({
+  images,
+  altFallback,
+}: {
+  images?: NoteImage[];
+  altFallback: string;
+}) {
+  if (!images || images.length === 0) return null;
+  return (
+    <div className="nr-images">
+      {images.map((image, i) =>
+        image.svg ? (
+          <figure className="nr-figure nr-figure--svg" key={i}>
+            <div
+              className="nr-figure__svg"
+              role="img"
+              aria-label={image.caption ?? altFallback}
+              dangerouslySetInnerHTML={{ __html: image.svg }}
+            />
+            {image.caption && <figcaption>{image.caption}</figcaption>}
+          </figure>
+        ) : (
+          <figure className="nr-figure" key={i}>
+            <img
+              src={image.url}
+              alt={image.caption ?? altFallback}
+              loading="lazy"
+            />
+            {image.caption && <figcaption>{image.caption}</figcaption>}
+          </figure>
+        ),
+      )}
+    </div>
+  );
+}
+
+function NoteVideo({
+  youtubeId,
+  title,
+}: {
+  youtubeId?: string;
+  title: string;
+}) {
+  if (!youtubeId) return null;
+  return (
+    <div className="nr-video">
+      <iframe
+        src={`https://www.youtube.com/embed/${youtubeId}`}
+        title={title}
+        loading="lazy"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      />
+    </div>
+  );
+}
 
 type NoteReaderProps = {
   note: NoteData | null;
@@ -172,48 +246,23 @@ export default function NoteReader({
                 <h2 className="nr-section__title">{section.title}</h2>
                 <p className="nr-section__body">{section.body}</p>
 
-                {section.images && section.images.length > 0 && (
-                  <div className="nr-images">
-                    {section.images.map((image, i) =>
-                      image.svg ? (
-                        <figure className="nr-figure nr-figure--svg" key={i}>
-                          <div
-                            className="nr-figure__svg"
-                            role="img"
-                            aria-label={image.caption ?? section.title}
-                            dangerouslySetInnerHTML={{ __html: image.svg }}
-                          />
-                          {image.caption && (
-                            <figcaption>{image.caption}</figcaption>
-                          )}
-                        </figure>
-                      ) : (
-                        <figure className="nr-figure" key={i}>
-                          <img
-                            src={image.url}
-                            alt={image.caption ?? section.title}
-                            loading="lazy"
-                          />
-                          {image.caption && (
-                            <figcaption>{image.caption}</figcaption>
-                          )}
-                        </figure>
-                      ),
-                    )}
-                  </div>
-                )}
+                <NoteImages
+                  images={section.images}
+                  altFallback={section.title}
+                />
+                <NoteVideo
+                  youtubeId={section.youtubeId}
+                  title={section.title}
+                />
 
-                {section.youtubeId && (
-                  <div className="nr-video">
-                    <iframe
-                      src={`https://www.youtube.com/embed/${section.youtubeId}`}
-                      title={section.title}
-                      loading="lazy"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
+                {section.subsections?.map((sub, i) => (
+                  <div className="nr-subsection" key={i}>
+                    <h3 className="nr-subsection__title">{sub.title}</h3>
+                    <p className="nr-section__body">{sub.body}</p>
+                    <NoteImages images={sub.images} altFallback={sub.title} />
+                    <NoteVideo youtubeId={sub.youtubeId} title={sub.title} />
                   </div>
-                )}
+                ))}
               </section>
             ))}
           </article>

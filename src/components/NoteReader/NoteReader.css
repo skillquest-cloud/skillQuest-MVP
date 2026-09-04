@@ -148,6 +148,22 @@
   white-space: pre-line;
 }
 
+/* ---------- Subsections ---------- */
+
+.nr-subsection {
+  margin-top: 1.75rem;
+  padding-left: 1.25rem;
+  border-left: 2px solid var(--sq-border);
+}
+
+.nr-subsection__title {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 480;
+  font-size: 1.0625rem;
+  margin: 0 0 0.625rem;
+  color: var(--sq-text);
+}
+
 /* ---------- Images / diagrams ---------- */
 
 .nr-images {
