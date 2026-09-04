@@ -125,6 +125,61 @@ function NoteVideo({
   );
 }
 
+/**
+ * Renders body text as real paragraphs and lists, not just plain text
+ * with line breaks. A blank line (\n\n) separates blocks. Within a
+ * block, if EVERY line starts with "- " it becomes a bullet list; if
+ * every line starts with "1. " (any numbers) it becomes a numbered
+ * list; otherwise it's a plain paragraph with single line breaks kept.
+ */
+function NoteBody({ text }: { text: string }) {
+  const blocks = text.split(/\n\n+/).filter((b) => b.trim() !== "");
+
+  return (
+    <>
+      {blocks.map((block, i) => {
+        const lines = block.split("\n").filter((l) => l.trim() !== "");
+
+        const isBulleted =
+          lines.length > 0 && lines.every((l) => /^-\s+/.test(l.trim()));
+        const isNumbered =
+          lines.length > 0 && lines.every((l) => /^\d+\.\s+/.test(l.trim()));
+
+        if (isBulleted) {
+          return (
+            <ul className="nr-list" key={i}>
+              {lines.map((l, j) => (
+                <li key={j}>{l.trim().replace(/^-\s+/, "")}</li>
+              ))}
+            </ul>
+          );
+        }
+
+        if (isNumbered) {
+          return (
+            <ol className="nr-list" key={i}>
+              {lines.map((l, j) => (
+                <li key={j}>{l.trim().replace(/^\d+\.\s+/, "")}</li>
+              ))}
+            </ol>
+          );
+        }
+
+        return (
+          <p className="nr-section__body" key={i}>
+            {lines.map((l, j) => (
+              <span key={j}>
+                {l}
+                {j < lines.length - 1 && <br />}
+              </span>
+            ))}
+          </p>
+        );
+      })}
+    </>
+  );
+}
+
 type NoteReaderProps = {
   note: NoteData | null;
   loading: boolean;
@@ -244,7 +299,7 @@ export default function NoteReader({
                 }}
               >
                 <h2 className="nr-section__title">{section.title}</h2>
-                <p className="nr-section__body">{section.body}</p>
+                <NoteBody text={section.body} />
 
                 <NoteImages
                   images={section.images}
@@ -258,7 +313,7 @@ export default function NoteReader({
                 {section.subsections?.map((sub, i) => (
                   <div className="nr-subsection" key={i}>
                     <h3 className="nr-subsection__title">{sub.title}</h3>
-                    <p className="nr-section__body">{sub.body}</p>
+                    <NoteBody text={sub.body} />
                     <NoteImages images={sub.images} altFallback={sub.title} />
                     <NoteVideo youtubeId={sub.youtubeId} title={sub.title} />
                   </div>

@@ -145,7 +145,59 @@
   font-size: 1rem;
   line-height: 1.7;
   color: var(--sq-text);
-  white-space: pre-line;
+  margin: 0 0 1.25rem;
+}
+
+.nr-section__body:last-child {
+  margin-bottom: 0;
+}
+
+/* ---------- Lists ---------- */
+
+.nr-list {
+  margin: 0 0 1.25rem;
+  padding-left: 1.5rem;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--sq-text);
+}
+
+.nr-list:last-child {
+  margin-bottom: 0;
+}
+
+.nr-list li {
+  margin-bottom: 0.375rem;
+}
+
+ul.nr-list {
+  list-style: none;
+}
+
+ul.nr-list li {
+  position: relative;
+  padding-left: 0.25rem;
+}
+
+ul.nr-list li::before {
+  content: "";
+  position: absolute;
+  left: -1.125rem;
+  top: 0.625rem;
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 999px;
+  background: var(--sq-amber);
+}
+
+ol.nr-list {
+  list-style: decimal;
+}
+
+ol.nr-list::marker,
+ol.nr-list li::marker {
+  color: var(--sq-amber);
+  font-weight: 600;
 }
 
 /* ---------- Subsections ---------- */
