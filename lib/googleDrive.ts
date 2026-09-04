@@ -9,9 +9,7 @@ import { google } from "googleapis";
 function getCredentials() {
   const raw = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
   if (!raw) {
-    throw new Error(
-      "Missing GOOGLE_SERVICE_ACCOUNT_KEY environment variable"
-    );
+    throw new Error("Missing GOOGLE_SERVICE_ACCOUNT_KEY environment variable");
   }
   return JSON.parse(raw);
 }
@@ -31,6 +29,7 @@ export function getDrive() {
 }
 
 export const FOLDER_MIME = "application/vnd.google-apps.folder";
+export const SHORTCUT_MIME = "application/vnd.google-apps.shortcut";
 
 /** List child folders of a given Drive folder id. */
 export async function listChildFolders(folderId: string) {
@@ -43,15 +42,45 @@ export async function listChildFolders(folderId: string) {
   return res.data.files ?? [];
 }
 
-/** List child JSON files (not folders) of a given Drive folder id. */
+/** Find a single child folder by exact name (case-insensitive). */
+export async function findChildFolderByName(parentId: string, name: string) {
+  const drive = getDrive();
+  const res = await drive.files.list({
+    q: `'${parentId}' in parents and mimeType='${FOLDER_MIME}' and trashed=false and name='${name.replace(/'/g, "\\'")}'`,
+    fields: "files(id, name)",
+  });
+  return res.data.files?.[0] ?? null;
+}
+/**
+ * List child JSON files (not folders) of a given Drive folder id —
+ * including shortcuts that point to a JSON file elsewhere. A shortcut
+ * is resolved to its real target's id, so the rest of the app never
+ * needs to know it wasn't a real file sitting in this folder.
+ */
 export async function listChildJsonFiles(folderId: string) {
   const drive = getDrive();
   const res = await drive.files.list({
-    q: `'${folderId}' in parents and mimeType='application/json' and trashed=false`,
-    fields: "files(id, name)",
+    q: `'${folderId}' in parents and (mimeType='application/json' or mimeType='${SHORTCUT_MIME}') and trashed=false`,
+    fields:
+      "files(id, name, mimeType, shortcutDetails(targetId, targetMimeType))",
     orderBy: "name",
   });
-  return res.data.files ?? [];
+
+  const files = res.data.files ?? [];
+  return files
+    .filter(
+      (f) =>
+        f.mimeType === "application/json" ||
+        f.shortcutDetails?.targetMimeType === "application/json",
+    )
+    .map((f) => {
+      if (f.mimeType === SHORTCUT_MIME && f.shortcutDetails?.targetId) {
+        // Use the real file's id, not the shortcut's — so /api/note
+        // fetches the actual content without any extra resolving step.
+        return { id: f.shortcutDetails.targetId, name: f.name };
+      }
+      return { id: f.id, name: f.name };
+    });
 }
 
 /** Fetch and parse a JSON file's contents by file id. */
@@ -59,7 +88,7 @@ export async function getJsonFileContent(fileId: string) {
   const drive = getDrive();
   const res = await drive.files.get(
     { fileId, alt: "media" },
-    { responseType: "json" }
+    { responseType: "json" },
   );
   return res.data;
 }

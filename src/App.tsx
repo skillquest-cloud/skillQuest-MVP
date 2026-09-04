@@ -4,12 +4,25 @@ import CourseGrid from "./components/courese/CourseGrid";
 import LevelGrid from "./components/LevelGrid/LevelGrid";
 import SubjectGrid from "./components/SubjestGrid/SubjectGrid";
 import NoteReader, { type NoteData } from "./components/NoteReader/NoteReader";
+import SearchResults from "./components/SearchResults/SearchResults";
 import AdminPage from "./components/AdminPage/AdminPage";
 import "./App.css";
 
-type View = "landing" | "courses" | "levels" | "subjects" | "note";
+type View = "landing" | "courses" | "levels" | "subjects" | "note" | "search";
 
 type DriveItem = { id: string; name: string };
+
+type SearchEntry =
+  | { type: "course"; courseId: string; courseName: string }
+  | {
+      type: "subject";
+      courseId: string;
+      courseName: string;
+      levelId: string;
+      levelName: string;
+      subjectId: string;
+      subjectName: string;
+    };
 
 /** Fire-and-forget click tracking — never blocks navigation on failure. */
 function trackClick(label: string) {
@@ -59,6 +72,11 @@ function MainFlow() {
   const [noteLoading, setNoteLoading] = useState(false);
   const [noteError, setNoteError] = useState(false);
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchEntry[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState(false);
+
   const [selectedCourse, setSelectedCourse] = useState<DriveItem | null>(null);
   const [selectedLevel, setSelectedLevel] = useState<DriveItem | null>(null);
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(
@@ -97,10 +115,14 @@ function MainFlow() {
       .finally(() => setLevelsLoading(false));
   }, []);
 
-  const loadSubjects = useCallback((levelId: string) => {
+  const loadSubjects = useCallback((levelId: string, levelName: string) => {
     setSubjectsLoading(true);
     setSubjectsError(false);
-    fetch(`/api/subjects?levelId=${encodeURIComponent(levelId)}`)
+    fetch(
+      `/api/subjects?levelId=${encodeURIComponent(
+        levelId,
+      )}&levelName=${encodeURIComponent(levelName)}`,
+    )
       .then((r) => {
         if (!r.ok) throw new Error("Request failed");
         return r.json();
@@ -130,6 +152,53 @@ function MainFlow() {
       .finally(() => setNoteLoading(false));
   }, []);
 
+  function openSubject(subjectId: string, course: DriveItem, level: DriveItem) {
+    setSelectedCourse(course);
+    setSelectedLevel(level);
+    setSelectedSubjectId(subjectId);
+    setView("note");
+    loadNote(subjectId);
+    trackClick(`${course.name} · ${level.name}`);
+  }
+
+  const runSearch = useCallback((query: string) => {
+    setSearchLoading(true);
+    setSearchError(false);
+    fetch(`/api/search?q=${encodeURIComponent(query)}`)
+      .then((r) => {
+        if (!r.ok) throw new Error("Request failed");
+        return r.json();
+      })
+      .then((data: { results: SearchEntry[] }) => {
+        const results = data.results ?? [];
+        setSearchResults(results);
+
+        // Exactly one match: jump straight there instead of showing a list.
+        if (results.length === 1) {
+          const only = results[0];
+          if (only.type === "course") {
+            setSelectedCourse({ id: only.courseId, name: only.courseName });
+            setView("levels");
+          } else {
+            openSubject(
+              only.subjectId,
+              { id: only.courseId, name: only.courseName },
+              { id: only.levelId, name: only.levelName },
+            );
+          }
+        } else {
+          setView("search");
+        }
+      })
+      .catch((err) => {
+        console.error("Search failed:", err);
+        setSearchError(true);
+        setView("search");
+      })
+      .finally(() => setSearchLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     trackVisit();
   }, []);
@@ -143,18 +212,9 @@ function MainFlow() {
   }, [view, selectedCourse, loadLevels]);
 
   useEffect(() => {
-    if (view === "subjects" && selectedLevel) loadSubjects(selectedLevel.id);
+    if (view === "subjects" && selectedLevel)
+      loadSubjects(selectedLevel.id, selectedLevel.name);
   }, [view, selectedLevel, loadSubjects]);
-
-  function openSubject(subjectId: string) {
-    setSelectedSubjectId(subjectId);
-    setView("note");
-    loadNote(subjectId);
-
-    if (selectedCourse && selectedLevel) {
-      trackClick(`${selectedCourse.name} · ${selectedLevel.name}`);
-    }
-  }
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -163,7 +223,39 @@ function MainFlow() {
   return (
     <>
       {view === "landing" && (
-        <LandingPage onExplore={() => setView("courses")} />
+        <LandingPage
+          onExplore={(query) => {
+            const trimmed = query.trim();
+            if (!trimmed) {
+              setView("courses");
+              return;
+            }
+            setSearchQuery(trimmed);
+            runSearch(trimmed);
+          }}
+        />
+      )}
+
+      {view === "search" && (
+        <SearchResults
+          query={searchQuery}
+          results={searchResults}
+          loading={searchLoading}
+          error={searchError}
+          onRetry={() => runSearch(searchQuery)}
+          onBack={() => setView("landing")}
+          onSelectCourse={(courseId, courseName) => {
+            setSelectedCourse({ id: courseId, name: courseName });
+            setView("levels");
+          }}
+          onSelectSubject={(entry) =>
+            openSubject(
+              entry.subjectId,
+              { id: entry.courseId, name: entry.courseName },
+              { id: entry.levelId, name: entry.levelName },
+            )
+          }
+        />
       )}
 
       {view === "courses" && (
@@ -203,9 +295,11 @@ function MainFlow() {
           subjects={subjects}
           loading={subjectsLoading}
           error={subjectsError}
-          onRetry={() => loadSubjects(selectedLevel.id)}
+          onRetry={() => loadSubjects(selectedLevel.id, selectedLevel.name)}
           onBack={() => setView("levels")}
-          onSelectSubject={openSubject}
+          onSelectSubject={(subjectId) =>
+            openSubject(subjectId, selectedCourse, selectedLevel)
+          }
         />
       )}
 
