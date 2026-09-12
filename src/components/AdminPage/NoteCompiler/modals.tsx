@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
-import type { NoteSummary, RecentDestination, SaveDestination } from "./types";
-import { listNotes, listRecentDestinations } from "./noteCompilerApi";
+import type { NoteSummary, RecentDestination } from "./types";
+import {
+  listCourses,
+  listNotes,
+  listRecentDestinations,
+} from "./noteCompilerApi";
 
 // ---------- Shell ----------
 
@@ -26,7 +30,12 @@ export function ModalShell({
       >
         <div className="modal__head">
           <h2 className="modal__title">{title}</h2>
-          <button type="button" className="icon-btn" onClick={onClose} title="Close">
+          <button
+            type="button"
+            className="icon-btn"
+            onClick={onClose}
+            title="Close"
+          >
             ✕
           </button>
         </div>
@@ -47,7 +56,10 @@ export function NewNoteModal({
 }) {
   const [fileName, setFileName] = useState("");
   const [title, setTitle] = useState("");
-  const cleanFileName = fileName.trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-");
+  const cleanFileName = fileName
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, "-");
 
   return (
     <ModalShell title="New note" onClose={onClose}>
@@ -60,7 +72,9 @@ export function NewNoteModal({
         onChange={(e) => setFileName(e.target.value)}
         autoFocus
       />
-      {cleanFileName && <p className="modal__hint">Saves as {cleanFileName}.json</p>}
+      {cleanFileName && (
+        <p className="modal__hint">Saves as {cleanFileName}.json</p>
+      )}
 
       <label className="field-label field-label--sm" style={{ marginTop: 14 }}>
         Title
@@ -92,27 +106,52 @@ export function NewNoteModal({
 
 // ---------- Save ----------
 
+export interface SaveModalDestination {
+  course: string;
+  level: string;
+}
+
 export function SaveModal({
   onClose,
   onSave,
   initial,
+  fileName,
 }: {
   onClose: () => void;
-  onSave: (destination: SaveDestination) => void;
-  initial: SaveDestination;
+  onSave: (destination: SaveModalDestination) => void;
+  initial: SaveModalDestination;
+  fileName: string;
 }) {
   const [recent, setRecent] = useState<RecentDestination[] | null>(null);
+  const [courses, setCourses] = useState<string[] | null>(null);
   const [course, setCourse] = useState(initial.course);
   const [level, setLevel] = useState(initial.level);
-  const [subject, setSubject] = useState(initial.subject);
+  const [addingCourse, setAddingCourse] = useState(false);
 
   useEffect(() => {
     listRecentDestinations()
       .then(setRecent)
       .catch(() => setRecent([]));
+    listCourses()
+      .then((list) => {
+        setCourses(list);
+        // First note for a brand-new course, or nothing in Drive yet — go
+        // straight to a text field instead of an empty/mismatched dropdown.
+        if (
+          list.length === 0 ||
+          (initial.course && !list.includes(initial.course))
+        ) {
+          setAddingCourse(true);
+        }
+      })
+      .catch(() => {
+        setCourses([]);
+        setAddingCourse(true);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const canSave = course.trim() && level.trim() && subject.trim();
+  const canSave = course.trim() && level.trim();
 
   return (
     <ModalShell title="Save to Drive" onClose={onClose}>
@@ -136,13 +175,51 @@ export function SaveModal({
       )}
 
       <label className="field-label field-label--sm">Course</label>
-      <input
-        className="field-input"
-        type="text"
-        placeholder="e.g. Engineering"
-        value={course}
-        onChange={(e) => setCourse(e.target.value)}
-      />
+      {addingCourse || courses === null ? (
+        <input
+          className="field-input"
+          type="text"
+          placeholder="e.g. Engineering"
+          value={course}
+          onChange={(e) => setCourse(e.target.value)}
+          autoFocus={addingCourse}
+        />
+      ) : (
+        <select
+          className="field-input"
+          value={course}
+          onChange={(e) => {
+            if (e.target.value === "__new__") {
+              setAddingCourse(true);
+              setCourse("");
+            } else {
+              setCourse(e.target.value);
+            }
+          }}
+        >
+          <option value="" disabled>
+            Choose a course
+          </option>
+          {courses.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+          <option value="__new__">+ New course…</option>
+        </select>
+      )}
+      {addingCourse && courses && courses.length > 0 && (
+        <button
+          type="button"
+          className="modal__link"
+          onClick={() => {
+            setAddingCourse(false);
+            setCourse("");
+          }}
+        >
+          Choose an existing course instead
+        </button>
+      )}
 
       <label className="field-label field-label--sm" style={{ marginTop: 10 }}>
         Level
@@ -155,16 +232,11 @@ export function SaveModal({
         onChange={(e) => setLevel(e.target.value)}
       />
 
-      <label className="field-label field-label--sm" style={{ marginTop: 10 }}>
-        Subject
-      </label>
-      <input
-        className="field-input"
-        type="text"
-        placeholder="e.g. Statistics"
-        value={subject}
-        onChange={(e) => setSubject(e.target.value)}
-      />
+      <p className="modal__hint" style={{ marginTop: 12 }}>
+        Saves as <strong>{fileName}.json</strong>
+        {course ? ` under ${course}` : ""}
+        {level ? ` · ${level}` : ""}
+      </p>
 
       <div className="modal__actions">
         <button type="button" className="btn btn--ghost" onClick={onClose}>
@@ -174,7 +246,7 @@ export function SaveModal({
           type="button"
           className="btn btn--primary"
           disabled={!canSave}
-          onClick={() => onSave({ course, level, subject })}
+          onClick={() => onSave({ course, level })}
         >
           Save to Drive
         </button>
@@ -183,9 +255,9 @@ export function SaveModal({
   );
 }
 
-// ---------- Edit / pick existing note ----------
+// ---------- Notes: browse + edit ----------
 
-export function NotePickerModal({
+export function NotesModal({
   onClose,
   onPick,
 }: {
@@ -202,11 +274,13 @@ export function NotePickerModal({
   }, []);
 
   const filtered = (notes ?? []).filter((n) =>
-    `${n.title} ${n.course} ${n.level} ${n.subject}`.toLowerCase().includes(query.toLowerCase()),
+    `${n.title} ${n.course} ${n.level} ${n.subject}`
+      .toLowerCase()
+      .includes(query.toLowerCase()),
   );
 
   return (
-    <ModalShell title="Edit a note" onClose={onClose} wide>
+    <ModalShell title="Notes" onClose={onClose} wide>
       <input
         className="field-input"
         type="text"
@@ -218,24 +292,37 @@ export function NotePickerModal({
 
       <div className="note-picker-list">
         {notes === null && <p className="modal__hint">Loading notes…</p>}
-        {notes !== null && filtered.length === 0 && (
+        {notes !== null && notes.length === 0 && (
+          <p className="modal__hint">
+            Nothing published yet — notes you save to Drive show up here.
+          </p>
+        )}
+        {notes !== null && notes.length > 0 && filtered.length === 0 && (
           <p className="modal__hint">No notes match that search.</p>
         )}
         {filtered.map((note) => (
-          <button
-            key={note.fileName}
-            type="button"
-            className="note-picker-item"
-            onClick={() => onPick(note.fileName)}
-          >
-            <span className="note-picker-item__title">{note.title || note.fileName}</span>
-            <span className="note-picker-item__meta">
-              {[note.course, note.level, note.subject].filter(Boolean).join(" · ")}
-            </span>
-            <span className="note-picker-item__date">
-              Updated {new Date(note.lastUpdated).toLocaleString()}
-            </span>
-          </button>
+          <div key={note.fileName} className="note-picker-item">
+            <div className="note-picker-item__info">
+              <span className="note-picker-item__title">
+                {note.title || note.fileName}
+              </span>
+              <span className="note-picker-item__meta">
+                {[note.course, note.level, note.subject]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
+              <span className="note-picker-item__date">
+                Updated {new Date(note.lastUpdated).toLocaleString()}
+              </span>
+            </div>
+            <button
+              type="button"
+              className="btn btn--small"
+              onClick={() => onPick(note.fileName)}
+            >
+              Edit
+            </button>
+          </div>
         ))}
       </div>
     </ModalShell>
@@ -256,8 +343,8 @@ export function ResumeDraftModal({
   return (
     <ModalShell title="Unsaved changes" onClose={onContinue}>
       <p className="modal__hint">
-        {fileName}.json has changes from your last session that haven't been published to Drive
-        yet.
+        {fileName}.json has changes from your last session that haven't been
+        published to Drive yet.
       </p>
       <div className="modal__actions">
         <button type="button" className="btn btn--ghost" onClick={onDiscard}>

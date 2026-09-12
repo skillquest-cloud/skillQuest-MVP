@@ -1,14 +1,31 @@
 import { useEffect, useRef, useState } from "react";
-import type { NoteDoc, SaveDestination, SaveStatus, PublishStatus } from "./types";
+import type {
+  NoteDoc,
+  SaveDestination,
+  SaveStatus,
+  PublishStatus,
+} from "./types";
 import { blankNote } from "./types";
-import { hasDraft, loadDraft, loadNote, publishToDrive, saveDraft } from "./noteCompilerApi";
+import {
+  hasDraft,
+  loadDraft,
+  loadNote,
+  publishToDrive,
+  saveDraft,
+} from "./noteCompilerApi";
 import { SectionEditor } from "./SectionEditor";
 import { MediaFields } from "./MediaFields";
 import { NotePreview } from "./NotePreview";
-import { NewNoteModal, SaveModal, NotePickerModal, ResumeDraftModal, ModalShell } from "./modals";
+import {
+  NewNoteModal,
+  NotesModal,
+  ResumeDraftModal,
+  SaveModal,
+  type SaveModalDestination,
+} from "./modals";
 import "./NoteCompiler.css";
 
-type ModalKind = "new" | "save" | "edit" | "viewer" | null;
+type ModalKind = "new" | "save" | "notes" | null;
 
 const AUTOSAVE_DELAY_MS = 1200;
 const DEFAULT_FILE_NAME = "untitled";
@@ -46,7 +63,9 @@ export default function NoteCompiler() {
     autosaveTimer.current = setTimeout(async () => {
       try {
         const { lastUpdated } = await saveDraft(doc);
-        setDoc((d) => (d.fileName === doc.fileName ? { ...d, lastUpdated } : d));
+        setDoc((d) =>
+          d.fileName === doc.fileName ? { ...d, lastUpdated } : d,
+        );
         setSaveStatus("saved");
       } catch {
         setSaveStatus("error");
@@ -86,7 +105,9 @@ export default function NoteCompiler() {
     setModal(null);
   }
 
-  async function handleSave(destination: SaveDestination) {
+  async function handleSave(partial: SaveModalDestination) {
+    // The file name IS the subject/topic identifier — no separate field to fill in.
+    const destination: SaveDestination = { ...partial, subject: doc.fileName };
     setPublishStatus("publishing");
     try {
       const { lastUpdated } = await publishToDrive(doc, destination);
@@ -104,7 +125,9 @@ export default function NoteCompiler() {
       : saveStatus === "error"
         ? "Couldn't save draft"
         : saveStatus === "saved"
-          ? `Draft saved · updated ${new Date(doc.lastUpdated).toLocaleTimeString([], {
+          ? `Draft saved · updated ${new Date(
+              doc.lastUpdated,
+            ).toLocaleTimeString([], {
               hour: "2-digit",
               minute: "2-digit",
             })}`
@@ -121,24 +144,36 @@ export default function NoteCompiler() {
               <span className="nc-topbar__filename">{doc.fileName}.json</span>
             </h1>
             <p className="nc-topbar__destination">
-              {[doc.course, doc.level, doc.subject].filter(Boolean).join(" · ") ||
-                "Not saved to a folder yet"}
+              {[doc.course, doc.level, doc.subject]
+                .filter(Boolean)
+                .join(" · ") || "Not saved to a folder yet"}
             </p>
           </div>
         </div>
 
         <div className="nc-topbar__actions">
-          <span className={`nc-status nc-status--${saveStatus}`}>{statusLabel}</span>
-          <button type="button" className="btn btn--ghost" onClick={() => setModal("new")}>
+          <span className={`nc-status nc-status--${saveStatus}`}>
+            {statusLabel}
+          </span>
+          <button
+            type="button"
+            className="btn btn--ghost"
+            onClick={() => setModal("new")}
+          >
             New
           </button>
-          <button type="button" className="btn btn--ghost" onClick={() => setModal("edit")}>
-            Edit
-          </button>
-          <button type="button" className="btn btn--ghost" onClick={() => setModal("viewer")}>
+          <button
+            type="button"
+            className="btn btn--ghost"
+            onClick={() => setModal("notes")}
+          >
             Note Viewer
           </button>
-          <button type="button" className="btn btn--primary" onClick={() => setModal("save")}>
+          <button
+            type="button"
+            className="btn btn--primary"
+            onClick={() => setModal("save")}
+          >
             Save
           </button>
         </div>
@@ -171,9 +206,15 @@ export default function NoteCompiler() {
                 rows={4}
                 placeholder="A short paragraph introducing the note..."
                 value={doc.introduction}
-                onChange={(e) => setDoc({ ...doc, introduction: e.target.value })}
+                onChange={(e) =>
+                  setDoc({ ...doc, introduction: e.target.value })
+                }
               />
-              <MediaFields idPrefix="intro" value={doc} onChange={(media) => setDoc({ ...doc, ...media })} />
+              <MediaFields
+                idPrefix="intro"
+                value={doc}
+                onChange={(media) => setDoc({ ...doc, ...media })}
+              />
             </div>
 
             <SectionEditor
@@ -198,38 +239,21 @@ export default function NoteCompiler() {
       </footer>
 
       {modal === "new" && (
-        <NewNoteModal onClose={() => setModal(null)} onCreate={handleCreateNote} />
+        <NewNoteModal
+          onClose={() => setModal(null)}
+          onCreate={handleCreateNote}
+        />
       )}
-      {modal === "edit" && (
-        <NotePickerModal onClose={() => setModal(null)} onPick={handlePickNote} />
+      {modal === "notes" && (
+        <NotesModal onClose={() => setModal(null)} onPick={handlePickNote} />
       )}
       {modal === "save" && (
         <SaveModal
           onClose={() => setModal(null)}
           onSave={handleSave}
-          initial={{ course: doc.course, level: doc.level, subject: doc.subject }}
+          initial={{ course: doc.course, level: doc.level }}
+          fileName={doc.fileName}
         />
-      )}
-      {modal === "viewer" && (
-        <ModalShell title="Note viewer" onClose={() => setModal(null)} wide>
-          <div className="nc-viewer">
-            <NotePreview doc={doc} />
-          </div>
-          <div className="modal__actions">
-            <button type="button" className="btn btn--ghost" onClick={() => setModal(null)}>
-              Back to editing
-            </button>
-            <button
-              type="button"
-              className="btn btn--primary"
-              onClick={() => {
-                setModal("save");
-              }}
-            >
-              Looks good — save
-            </button>
-          </div>
-        </ModalShell>
       )}
       {resumePrompt && (
         <ResumeDraftModal

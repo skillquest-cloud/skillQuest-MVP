@@ -20,6 +20,7 @@ import type {
  *   api/admin/notes.ts               GET ?course=&level=&subject= list
  *                                     GET ?fileName= load one full note
  *   api/admin/note-destinations.ts   GET → recent course/level/subject combos
+ *   api/admin/note-courses.ts        GET → distinct course names already in Drive
  *   api/admin/note-publish.ts        POST { doc, destination } → writes to Drive
  *   api/admin/note-image-upload.ts   POST FormData → { url }
  */
@@ -85,6 +86,11 @@ export function loadNote(fileName: string): Promise<NoteDoc> {
 
 export function listRecentDestinations(): Promise<RecentDestination[]> {
   return request("/note-destinations");
+}
+
+/** Distinct course names already used on Drive, for the Save dropdown. */
+export function listCourses(): Promise<string[]> {
+  return request("/note-courses");
 }
 
 // ---------- Publish to Drive ----------
