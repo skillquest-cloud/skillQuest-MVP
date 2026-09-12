@@ -8,20 +8,17 @@ import type {
 /**
  * Note Compiler API
  * ------------------
- * Thin client for a handful of new serverless functions living in
- * api/admin/ next to your existing admin routes. Matches the rest of the
- * app's convention: flat files, query params instead of path segments
- * (see api/note.ts's ?fileId= for the pattern), same Drive service
- * account your other api/*.ts files already use.
+ * Thin client for a handful of serverless functions in api/admin/.
+ * Consolidated to 4 files (not one per action) to stay under Vercel
+ * Hobby's 12-function-per-deployment cap — each route branches on
+ * method/query param internally instead.
  *
- * Files to add:
- *   api/admin/note-draft.ts          PUT save draft · GET ?fileName= load draft
- *   api/admin/note-draft-exists.ts   GET ?fileName= → { exists: boolean }
- *   api/admin/notes.ts               GET ?course=&level=&subject= list
- *                                     GET ?fileName= load one full note
- *   api/admin/note-destinations.ts   GET → recent course/level/subject combos
- *   api/admin/note-courses.ts        GET → distinct course names already in Drive
- *   api/admin/note-publish.ts        POST { doc, destination } → writes to Drive
+ * Files:
+ *   api/admin/note-draft.ts    PUT save · GET ?fileName= load ·
+ *                              GET ?fileName=&check=1 → { exists }
+ *   api/admin/notes.ts         GET ?course=&level= list · GET ?fileName= load ·
+ *                              POST { doc, destination } publish
+ *   api/admin/note-meta.ts     GET ?type=courses | ?type=destinations
  *   api/admin/note-image-upload.ts   POST FormData → { url }
  */
 
@@ -55,7 +52,7 @@ export async function loadDraft(fileName: string): Promise<NoteDoc | null> {
 export async function hasDraft(fileName: string): Promise<boolean> {
   try {
     const { exists } = await request<{ exists: boolean }>(
-      `/note-draft-exists?fileName=${encodeURIComponent(fileName)}`,
+      `/note-draft?fileName=${encodeURIComponent(fileName)}&check=1`,
     );
     return exists;
   } catch {
@@ -85,12 +82,12 @@ export function loadNote(fileName: string): Promise<NoteDoc> {
 // ---------- Save destinations ----------
 
 export function listRecentDestinations(): Promise<RecentDestination[]> {
-  return request("/note-destinations");
+  return request("/note-meta?type=destinations");
 }
 
 /** Distinct course names already used on Drive, for the Save dropdown. */
 export function listCourses(): Promise<string[]> {
-  return request("/note-courses");
+  return request("/note-meta?type=courses");
 }
 
 // ---------- Publish to Drive ----------
@@ -99,7 +96,7 @@ export function publishToDrive(
   doc: NoteDoc,
   destination: SaveDestination,
 ): Promise<{ lastUpdated: string; driveFileId: string }> {
-  return request("/note-publish", {
+  return request("/notes", {
     method: "POST",
     body: JSON.stringify({ doc, destination }),
   });
