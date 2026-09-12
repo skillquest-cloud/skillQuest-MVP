@@ -36,7 +36,7 @@ export function cacheSet<T>(key: string, value: T, ttlMs = DEFAULT_TTL_MS) {
 export async function cached<T>(
   key: string,
   fn: () => Promise<T>,
-  ttlMs = DEFAULT_TTL_MS
+  ttlMs = DEFAULT_TTL_MS,
 ): Promise<T> {
   const existing = cacheGet<T>(key);
   if (existing !== undefined) return existing;
@@ -44,4 +44,10 @@ export async function cached<T>(
   const fresh = await fn();
   cacheSet(key, fresh, ttlMs);
   return fresh;
+}
+
+/** Invalidate a single cache key — used after a write so stale reads
+ *  (e.g. the notes list) don't linger for the rest of the TTL window. */
+export function cacheInvalidate(key: string) {
+  store.delete(key);
 }
