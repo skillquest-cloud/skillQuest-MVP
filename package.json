@@ -12,6 +12,7 @@
   "dependencies": {
     "@vercel/kv": "^3.0.0",
     "@vercel/node": "^10.0.0",
+    "formidable": "^3.5.4",
     "googleapis": "^178.0.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
