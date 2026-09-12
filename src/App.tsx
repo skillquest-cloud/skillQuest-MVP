@@ -6,6 +6,7 @@ import SubjectGrid from "./components/SubjestGrid/SubjectGrid";
 import NoteReader, { type NoteData } from "./components/NoteReader/NoteReader";
 import SearchResults from "./components/SearchResults/SearchResults";
 import AdminPage from "./components/AdminPage/AdminPage";
+import NoteCompilerPage from "./components/AdminPage/NoteCompilerPage";
 import "./App.css";
 
 type View = "landing" | "courses" | "levels" | "subjects" | "note" | "search";
@@ -317,13 +318,14 @@ function MainFlow() {
 }
 
 function App() {
-  // Hidden admin route — not linked anywhere in the UI, reached only by
-  // visiting /skillquest_admin directly.
-  const isAdminRoute =
-    typeof window !== "undefined" &&
-    window.location.pathname === "/skillquest_admin";
+  // Hidden admin routes — not linked anywhere in the public UI, reached
+  // only by visiting these paths directly.
+  const path = typeof window !== "undefined" ? window.location.pathname : "";
 
-  return isAdminRoute ? <AdminPage /> : <MainFlow />;
+  if (path === "/skillquest_admin/notes") return <NoteCompilerPage />;
+  if (path === "/skillquest_admin") return <AdminPage />;
+
+  return <MainFlow />;
 }
 
 export default App;

@@ -107,3 +107,95 @@
 .ap-table tbody tr:hover {
   background: rgba(245, 243, 237, 0.04);
 }
+
+/* ---------- Tabs ---------- */
+
+.ap-tabs {
+  display: flex;
+  gap: 1.5rem;
+  max-width: 48rem;
+  margin: 0 auto 2rem;
+  border-bottom: 1px solid var(--sq-border);
+}
+
+.ap-tab {
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--sq-text-muted);
+  text-decoration: none;
+  padding: 0.625rem 0.125rem;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+}
+
+.ap-tab:hover {
+  color: var(--sq-text);
+}
+
+.ap-tab--active {
+  color: var(--sq-amber);
+  border-bottom-color: var(--sq-amber);
+}
+
+/* ---------- Tabs ---------- */
+
+.ap-tabs {
+  display: flex;
+  gap: 1.5rem;
+  max-width: 48rem;
+  margin: 0 auto 2rem;
+  border-bottom: 1px solid var(--sq-border);
+}
+
+.ap-tab {
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--sq-text-muted);
+  text-decoration: none;
+  padding: 0.625rem 0.125rem;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+}
+
+.ap-tab:hover {
+  color: var(--sq-text);
+}
+
+.ap-tab--active {
+  color: var(--sq-amber);
+  border-bottom-color: var(--sq-amber);
+}
+
+/* ---------- Note Compiler page ---------- */
+/* No card, no heading — the tool fills the window. The tab strip is the
+   only chrome, sized to match a toolbar rather than a marketing page. */
+
+.ap-page--notes {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 0;
+}
+
+.ap-page--notes .ap-tabs {
+  max-width: none;
+  margin: 0;
+  padding: 0.875rem 1.5rem 0;
+  flex: 0 0 auto;
+  background: var(--sq-ink);
+}
+
+.ap-notecompiler-page {
+  flex: 1;
+  min-height: 0;
+}

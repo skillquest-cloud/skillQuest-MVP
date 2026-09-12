@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import ErrorState from "../ErrorState/ErrorState";
+import AdminTabs from "./AdminTabs";
 import "./AdminPage.css";
 
 type Stats = {
@@ -39,6 +40,7 @@ export default function AdminPage() {
   return (
     <main className="ap-page">
       <h1 className="ap-heading">SkillQuest — Admin</h1>
+      <AdminTabs active="analytics" />
 
       {error ? (
         <ErrorState message="Couldn't load analytics." onRetry={load} />
