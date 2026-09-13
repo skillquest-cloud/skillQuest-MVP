@@ -100,9 +100,16 @@ export default function NoteCompiler() {
   }
 
   async function handlePickNote(fileName: string) {
-    const note = await loadNote(fileName);
-    loadWithoutAutosaving(note);
-    setModal(null);
+    try {
+      const note = await loadNote(fileName);
+      loadWithoutAutosaving(note);
+      setModal(null);
+    } catch (err) {
+      console.error("Failed to load note for editing:", err);
+      window.alert(
+        `Couldn't load "${fileName}" — it may have been moved or renamed on Drive.`,
+      );
+    }
   }
 
   async function handleSave(partial: SaveModalDestination) {

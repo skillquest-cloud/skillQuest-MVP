@@ -4,6 +4,7 @@ import type {
   RecentDestination,
   SaveDestination,
 } from "./types";
+import { normalizeNoteDoc } from "./types";
 
 /**
  * Note Compiler API
@@ -41,9 +42,10 @@ export function saveDraft(doc: NoteDoc): Promise<{ lastUpdated: string }> {
 
 export async function loadDraft(fileName: string): Promise<NoteDoc | null> {
   try {
-    return await request<NoteDoc>(
+    const raw = await request<unknown>(
       `/note-draft?fileName=${encodeURIComponent(fileName)}`,
     );
+    return normalizeNoteDoc(raw, fileName);
   } catch {
     return null;
   }
@@ -75,8 +77,11 @@ export function listNotes(
   return request(`/notes${qs ? `?${qs}` : ""}`);
 }
 
-export function loadNote(fileName: string): Promise<NoteDoc> {
-  return request(`/notes?fileName=${encodeURIComponent(fileName)}`);
+export async function loadNote(fileName: string): Promise<NoteDoc> {
+  const raw = await request<unknown>(
+    `/notes?fileName=${encodeURIComponent(fileName)}`,
+  );
+  return normalizeNoteDoc(raw, fileName);
 }
 
 // ---------- Save destinations ----------
