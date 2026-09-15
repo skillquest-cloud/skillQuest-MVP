@@ -198,7 +198,11 @@ export async function getFileMeta(fileId: string) {
 }
 
 /** Upload a binary file (an image dropped into the note compiler) and make
- *  it publicly viewable so it can be used as an <img src>. */
+ *  it publicly viewable so it can be used as an <img src>. The upload and
+ *  the "make it public" step are separated deliberately: some Google
+ *  Workspace/Education domains block "anyone with the link" sharing at
+ *  the org level, which would otherwise fail silently as a generic
+ *  upload error instead of the actual, fixable cause. */
 export async function uploadPublicImage(
   parentId: string,
   name: string,
@@ -215,10 +219,18 @@ export async function uploadPublicImage(
   const fileId = created.data.id;
   if (!fileId) throw new Error("Drive upload did not return a file id");
 
-  await drive.permissions.create({
-    fileId,
-    requestBody: { role: "reader", type: "anyone" },
-  });
+  try {
+    await drive.permissions.create({
+      fileId,
+      requestBody: { role: "reader", type: "anyone" },
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(
+      `Image uploaded to Drive, but couldn't make it public (this usually means "Anyone with the link" sharing is disabled for your Workspace/organization). Drive said: ${message}`,
+      { cause: err },
+    );
+  }
 
   return {
     fileId,

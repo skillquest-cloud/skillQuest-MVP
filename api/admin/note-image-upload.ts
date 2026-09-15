@@ -1,7 +1,10 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { readFile } from "node:fs/promises";
 import { formidable } from "formidable";
-import { findOrCreateChildFolder, uploadPublicImage } from "../../lib/googleDrive.js";
+import {
+  findOrCreateChildFolder,
+  uploadPublicImage,
+} from "../../lib/googleDrive.js";
 import { getRootFolderId } from "../../lib/adminNotes.js";
 import { cached } from "../../lib/cache.js";
 
@@ -15,7 +18,8 @@ async function getMediaFolderId(): Promise<string> {
   const rootId = getRootFolderId();
   return cached("admin:media-folder-id", async () => {
     const folder = await findOrCreateChildFolder(rootId, "_note_media");
-    if (!folder.id) throw new Error("Could not get or create the _note_media folder");
+    if (!folder.id)
+      throw new Error("Could not get or create the _note_media folder");
     return folder.id;
   });
 }
@@ -52,7 +56,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     return res.status(200).json({ url });
   } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Failed to upload image";
     console.error("note-image-upload failed:", err);
-    return res.status(502).json({ error: "Failed to upload image" });
+    return res.status(502).json({ error: message });
   }
 }

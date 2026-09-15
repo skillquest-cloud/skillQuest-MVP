@@ -30,8 +30,10 @@ export function MediaFields({ value, onChange, idPrefix }: MediaFieldsProps) {
       const { url } = await uploadImage(file);
       onChange({ ...value, image: { url, alt: value.image?.alt ?? "" } });
       setOpen("image");
-    } catch {
-      setUploadError("Couldn't upload that image — try again or paste a URL below.");
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Couldn't upload that image.";
+      setUploadError(`${message} You can also paste a URL below instead.`);
     } finally {
       setUploading(false);
     }
@@ -65,7 +67,10 @@ export function MediaFields({ value, onChange, idPrefix }: MediaFieldsProps) {
 
       {open === "video" && (
         <div className="media-panel">
-          <label className="field-label field-label--sm" htmlFor={`${idPrefix}-video`}>
+          <label
+            className="field-label field-label--sm"
+            htmlFor={`${idPrefix}-video`}
+          >
             YouTube URL
           </label>
           <div className="media-panel__row">
@@ -101,7 +106,10 @@ export function MediaFields({ value, onChange, idPrefix }: MediaFieldsProps) {
               placeholder="Paste an image URL, or upload a file"
               value={value.image?.url ?? ""}
               onChange={(e) =>
-                onChange({ ...value, image: { url: e.target.value, alt: value.image?.alt ?? "" } })
+                onChange({
+                  ...value,
+                  image: { url: e.target.value, alt: value.image?.alt ?? "" },
+                })
               }
             />
             <button
@@ -137,7 +145,10 @@ export function MediaFields({ value, onChange, idPrefix }: MediaFieldsProps) {
           {uploadError && <p className="media-panel__error">{uploadError}</p>}
           {hasImage && (
             <>
-              <label className="field-label field-label--sm" style={{ marginTop: 8 }}>
+              <label
+                className="field-label field-label--sm"
+                style={{ marginTop: 8 }}
+              >
                 Alt text
               </label>
               <input
@@ -146,10 +157,17 @@ export function MediaFields({ value, onChange, idPrefix }: MediaFieldsProps) {
                 placeholder="Describe the image for screen readers"
                 value={value.image?.alt ?? ""}
                 onChange={(e) =>
-                  onChange({ ...value, image: { url: value.image!.url, alt: e.target.value } })
+                  onChange({
+                    ...value,
+                    image: { url: value.image!.url, alt: e.target.value },
+                  })
                 }
               />
-              <img src={value.image?.url} alt="" className="media-panel__preview" />
+              <img
+                src={value.image?.url}
+                alt=""
+                className="media-panel__preview"
+              />
             </>
           )}
         </div>
@@ -157,7 +175,10 @@ export function MediaFields({ value, onChange, idPrefix }: MediaFieldsProps) {
 
       {open === "svg" && (
         <div className="media-panel">
-          <label className="field-label field-label--sm" htmlFor={`${idPrefix}-svg`}>
+          <label
+            className="field-label field-label--sm"
+            htmlFor={`${idPrefix}-svg`}
+          >
             SVG markup
           </label>
           <textarea
@@ -169,7 +190,10 @@ export function MediaFields({ value, onChange, idPrefix }: MediaFieldsProps) {
             onChange={(e) => onChange({ ...value, svg: e.target.value })}
           />
           {hasSvg && (
-            <div className="media-panel__preview media-panel__preview--svg" dangerouslySetInnerHTML={{ __html: value.svg ?? "" }} />
+            <div
+              className="media-panel__preview media-panel__preview--svg"
+              dangerouslySetInnerHTML={{ __html: value.svg ?? "" }}
+            />
           )}
         </div>
       )}
